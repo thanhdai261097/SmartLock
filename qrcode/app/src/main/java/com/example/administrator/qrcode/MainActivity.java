@@ -9,13 +9,16 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.widget.TabHost;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    private ViewPager mViewPager;
+    public static ViewPager mViewPager;
+    TabLayout tabLayout;
 
 
 
@@ -30,11 +33,13 @@ public class MainActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         mViewPager = (ViewPager) findViewById(R.id.container);
+
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        mViewPager.setCurrentItem(0);
        /* button = (Button)findViewById(R.id.scanButton);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,56 +48,26 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult( i,REQUEST_CODE_QR_SCAN);
             }
         });*/
-
-
+        setViewListener();
     }
-    /*public static class PlaceholderFragment extends Fragment {
 
-        private static final String KEY_COLOR = "key_color";
-
-        public PlaceholderFragment() {
-        }
-
-        // Method static dạng singleton, cho phép tạo fragment mới, lấy tham số đầu vào để cài đặt màu sắc.
-        public static PlaceholderFragment newInstance(int color) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();//truyen du lieu
-            args.putInt(KEY_COLOR, color);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            View rootViewFragmentScan = inflater.inflate(R.layout.fragment_scan, container, false);
-            RelativeLayout relativeLayout = (RelativeLayout) rootView.findViewById(R.id.rl_fragment);
-            RelativeLayout relativeLayout2 = (RelativeLayout) rootViewFragmentScan.findViewById(R.id.r2_fragment);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);*/
-
-          /*  switch (getArguments().getInt(KEY_COLOR)) {
-                case 1:
-                    relativeLayout2.setBackgroundColor(Color.YELLOW);
-                   // textView.setText("Green");
-                    break;
-                case 2:
-                    relativeLayout.setBackgroundColor(Color.RED);
-                    textView.setText("Red");
-                    break;
-                default:
-                    relativeLayout.setBackgroundColor(Color.GREEN);
-                    textView.setText("Green");
-                    break;
+    public void setViewListener(){
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
             }
 
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
 
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
 
-            return rootView;
-        }
+            }
+        });
+    }
 
-
-    }*/
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -124,9 +99,9 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "Login";
                 case 1:
-                    return "SECTION 2";
+                    return "Scan";
             }
             return null;
         }
