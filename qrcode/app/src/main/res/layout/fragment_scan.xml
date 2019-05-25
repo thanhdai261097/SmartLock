@@ -1,0 +1,59 @@
+<RelativeLayout
+    android:id="@+id/r2_fragment"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="15dp"
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp"
+    android:paddingTop="15dp"
+    android:background="@drawable/gradient"
+    tools:context="com.example.administrator.qrcode.Fragment_ScanQR">
+
+    <TextView
+        android:id="@+id/section_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:layout_width="300dp"
+        android:layout_height="300dp" />
+
+    <Button
+        android:id="@+id/btnLoad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/imageView"
+        android:layout_below="@+id/imageView"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="24dp"
+        android:text="Load Image" />
+
+    <Button
+        android:id="@+id/btnScan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btnLoad"
+        android:layout_alignEnd="@+id/imageView"
+        android:layout_marginEnd="38dp"
+        android:text="Scan" />
+
+
+    <!-- <Button
+         android:id="@+id/scanButton"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="@+id/imageView"
+         android:layout_below="@+id/section_label"
+         android:layout_marginEnd="@dimen/activity_vertical_margin"
+
+
+         android:layout_toEndOf="@+id/section_label"
+         android:text="SCAN"
+         tools:layout_centerHorizontal="true" />
+ -->
+
+</RelativeLayout>
