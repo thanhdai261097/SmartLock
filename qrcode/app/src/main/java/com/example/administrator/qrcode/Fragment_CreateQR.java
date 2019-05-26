@@ -6,15 +6,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TabHost;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -31,80 +32,73 @@ import okhttp3.Response;
  */
 
 public class Fragment_CreateQR extends Fragment {
-    public TextView textView;
-    public CardView btnCardView;
-    public EditText txtID,txtEmail;
+    public Button loginButton;
+    public EditText cmndTextView, emailTextView;
     public   static  final  String SHARE_PREF_ID = "id";
     public  static final  String SHARE_PREF_EMAIL = "email";
-    public  static  final  String KEY_ID = "key_id";
-    public  static  final  String KEY_EMAIL = "key_email";
-    UserInterface userInterface;
 
+    public static  final  String KEY_CMND = "key_cmnd";
+    public static  final  String KEY_EMAIL = "key_email";
+    public static final String KEY_ISLOCK = "key_isLock";
+    public static  final  String KEY_PHONE = "key_phone";
+    public static final String KEY_DATEEXP = "key_dateExp";
+    public static final String KEY_NAME = "key_name";
 
+    private String email = null;
+    private String cmnd = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main,container,false);
 
+        getDataFromSharePreference();
         configureUI(view);
-        disPlayName();
+        setViewListener();
 
-        btnCardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveName();
-            }
-        });
         return view;
     }
 
     private void configureUI(View view) {
-        textView = (TextView)view.findViewById(R.id.textfont);
-        txtID = (EditText)view.findViewById(R.id.txtID);
-        txtEmail = (EditText)view.findViewById(R.id.txtEmail);
-        btnCardView = (CardView) view.findViewById(R.id.btnCreate);
+        cmndTextView = view.findViewById(R.id.txtID);
+        emailTextView = view.findViewById(R.id.txtEmail);
+        loginButton = view.findViewById(R.id.btnCreate);
+
+        if ( cmnd != null)
+            cmndTextView.setText(cmnd);
+
+        if (email != null)
+            emailTextView.setText(email);
     }
-    public void disPlayName(){
+
+    private void setViewListener() {
+        loginButton.setOnClickListener(v -> {
+            cmnd = cmndTextView.getText().toString().trim();
+            email = emailTextView.getText().toString().trim();
+            if(cmnd.isEmpty() || email.isEmpty()){
+                Toast.makeText(getContext(), "Email or ID must not be empty!", Toast.LENGTH_LONG).show();
+            }
+            else {
+                connectServer(cmnd,email);
+            }
+        });
+    }
+    private void getDataFromSharePreference(){
         SharedPreferences sp = this.getActivity().getSharedPreferences(SHARE_PREF_ID,Context.MODE_PRIVATE);
-        String id = sp.getString(KEY_ID,null);
-        String email = sp.getString(KEY_EMAIL,null);
-        //String []separated;
-        if(id!=null){
-          //  separated = id.split("/");
-           // txtID.setText(separated[0]);
-           // txtEmail.setText(separated[1]);
-            txtID.setText(id);
-        }
-        if(email!=null){
-            txtEmail.setText(email);
-        }
+        cmnd = sp.getString(KEY_CMND,null);
+        email = sp.getString(KEY_EMAIL,null);
     }
-    public void saveName() {
-        String id = txtID.getText().toString().trim();
-        //id += "/";
-       // id += txtEmail.getText().toString().trim();
-        String email = txtEmail.getText().toString().trim();
 
-        if(id.isEmpty() || email.isEmpty()){
-            if(id.isEmpty()){
-                txtID.setText("");
+    public void saveUserToSharePreference(String mCmnd, String mEmail,String mName, String mPhone, Boolean mLock, String mDateExp) {
 
-            }
-            if(email.isEmpty()){
-                txtEmail.setText("");
-            }
-        }
-        else {
-            connectServer(id,email);
-        }
         SharedPreferences sp = this.getActivity().getSharedPreferences(SHARE_PREF_ID, Context.MODE_PRIVATE);
         SharedPreferences.Editor  edit = sp.edit();
-        edit.putString(KEY_ID,id);
-        edit.putString(KEY_EMAIL,email);
+        edit.putString(KEY_CMND,mCmnd);
+        edit.putString(KEY_EMAIL,mEmail);
+        edit.putString(KEY_PHONE,mPhone);
+        edit.putBoolean(KEY_ISLOCK,mLock);
+        edit.putString(KEY_DATEEXP,mDateExp);
+        edit.putString(KEY_NAME,mName);
         edit.apply();
-        txtID.setText("");
-        txtEmail.setText("");
-        disPlayName();
 
     }
     private  void connectServer(String cmnd, String email){
@@ -115,37 +109,42 @@ public class Fragment_CreateQR extends Fragment {
 
         RequestBody reqBody = formBuilder.build();
 
-        Request request = new Request.Builder().url("http://172.16.4.96:3001/user/signin").post(reqBody).build();
+        Request request = new Request.Builder().url(domain.ip + "/user/signin").post(reqBody).build();
 
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.d("connect", "failed" + e );
+                getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Something went wrong!", Toast.LENGTH_LONG).show());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-
-                if (response.body().string().contains("error")) {
-                    Log.d("connect", "failed"  );
+                String jsonData = response.body().string();
+                if (jsonData.contains("error")) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Invalid email or Identify", Toast.LENGTH_LONG).show());
                 }
                 else {
-//                    Fragment_ScanQR.barcode = "http://172.16.4.96:3001/qrcode/generator/" +cmnd+ "/" + email;
-                    getActivity().runOnUiThread(() ->
-                            MainActivity.mViewPager.setCurrentItem(1)
-                    );
+                    try {
+                        JSONObject Jobject = new JSONObject(jsonData);
+                        JSONObject data = Jobject.getJSONObject("data");
+
+                        Boolean isLock = data.getBoolean("isLock");
+                        String phone = data.getString("phone");
+                        String dateExp = data.getString("date_exp");
+                        String name = data.getString("name");
+
+                        saveUserToSharePreference(cmnd,email,name, phone,isLock,dateExp);
+                    } catch (JSONException e) {
+                        Log.d("create", e.toString());
+                    }
+
+                    getActivity().runOnUiThread(() -> MainActivity.mViewPager.setCurrentItem(1));
                 }
             }
 
         });
     }
 
-    public interface UserInterface {
-
-        // Đây là phương thức trừu tượng
-        // phương thức trừu tượng của Interface không cần khai báo từ khóa abstract và public
-        void updateUser();
-
-    }
 }
+
