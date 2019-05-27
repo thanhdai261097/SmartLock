@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.administrator.qrcode.lib.HandleDateTime;
@@ -51,7 +52,7 @@ import okhttp3.Response;
  */
 
 public class Fragment_ScanQR extends Fragment implements UserInterface {
-    public Button btnLoad,btnScan;
+    public Button btnLoad, shareButton;
     public TextView nameTextView, emailTextView, phoneTextView, cmndTextView, dateExpTextView;
     public Bitmap bitmap;
     public LottieAnimationView lockLottieView;
@@ -83,7 +84,7 @@ public class Fragment_ScanQR extends Fragment implements UserInterface {
 
     private void configureUI(View view) {
         btnLoad = view.findViewById(R.id.btnLoad);
-        btnScan = view.findViewById(R.id.btnScan);
+        shareButton = view.findViewById(R.id.share_button);
 
         cmndTextView = view.findViewById(R.id.cmnd_text_view);
         emailTextView = view.findViewById(R.id.email_text_view);
@@ -137,7 +138,7 @@ public class Fragment_ScanQR extends Fragment implements UserInterface {
     }
     private void setViewListener() {
         btnLoad.setOnClickListener(v -> openGallery());
-        btnScan.setOnClickListener(v -> {
+        lockLottieView.setOnClickListener(v -> {
             getDataFromSharePreference();
             if ( !lockLottieView.isAnimating() || !isSendingCode) {
                 isSendingCode = true;
@@ -148,18 +149,13 @@ public class Fragment_ScanQR extends Fragment implements UserInterface {
                             String code = scanQRImage(bitmap);
                             sendLockCodeToServer(code);
                             saveQrCodeToInteralMemory(bitmap);
-
                         }
-
                         @Override
                         public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
+                            isSendingCode = false;
                         }
-
                         @Override
-                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                        }
+                        public void onPrepareLoad(Drawable placeHolderDrawable) {}
                     });
                 }
                 catch (Exception e){
@@ -168,6 +164,9 @@ public class Fragment_ScanQR extends Fragment implements UserInterface {
             }
 
 
+        });
+        shareButton.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Chia sẻ", Toast.LENGTH_LONG).show();
         });
     }
 
@@ -181,11 +180,21 @@ public class Fragment_ScanQR extends Fragment implements UserInterface {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.e("scan",e.toString());
+                isSendingCode = false;
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                getActivity().runOnUiThread(() ->handleLockLottieAnimation());
-                isSendingCode = false;
+                String jsonData = response.body().string();
+                if (jsonData.contains("error")) {
+                    getActivity().runOnUiThread(() -> {
+                        Toast.makeText(getContext(), "User expired!", Toast.LENGTH_LONG).show();
+                        MainActivity.mViewPager.setCurrentItem(0);
+                    });
+                }
+                else {
+                    getActivity().runOnUiThread(() -> handleLockLottieAnimation());
+                    isSendingCode = false;
+                }
             }
         });
     }

@@ -181,13 +181,13 @@
             tools:layout_editor_absoluteX="32dp" />
 
         <Button
-            android:id="@+id/btnScan"
+            android:id="@+id/share_button"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/btnLoad"
             android:layout_weight="1"
-            android:text="Quét"
+            android:text="Chia sẻ"
             tools:layout_editor_absoluteX="258dp" />
     </LinearLayout>
 
